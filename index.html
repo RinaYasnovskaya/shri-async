@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>shri-async</title>
+</head>
+<body>
+    <script src="shri-async-hw.js"></script>
+
+    <script>
+        const { AsyncArray } = Homework;
+
+        function map (array, fn, cb) {
+            const resArray = new AsyncArray();
+
+            array.length((length) => {
+                const arr = [];
+
+                const range = {
+                    last: length,
+                };
+
+                range[Symbol.iterator] = function() {
+                    return {
+                        current: 0,
+                        last: this.last,
+
+                        next() {
+                            if (this.current < this.last) {
+                                return { done: false, value: this.current++ };
+                            } else {
+                                return { done: true };
+                            }
+                        }
+
+                    }
+
+                };
+
+                for (let item of range) {
+                    arr.push(getPromise(array, fn, item));
+
+                    // resArray.push(getPromise(array, fn, item).then(res => fn(res)), () => {
+                    //     resArray.print();
+                    // });
+                }
+
+                Promise.all(arr).then((res) => {
+                    resArray.push([...res], () => {
+                        cb(resArray);
+                    });
+                }); 
+
+                
+            });
+        }
+    
+        function getPromise (array, fn, index) {
+            return new Promise(resolve => {
+                array.get(index, (resultItem) => resolve(resultItem))
+            })
+            .then(resultItem => fn(resultItem));
+        }
+
+        function double(el) {
+            return el*el;
+        }
+
+        const array = new AsyncArray([1,2,3]);
+        map(array, double, (array) => array.print());
+
+    </script>
+</body>
+</html>
+
+
+
+<!-- for(let i=0; i <= length-1; i++) {
+    arr.push(getPromise(array, fn, i));
+}
+
+Promise.all(arr).then((res) => {
+    resArray.push([...res], () => resArray.print());
+}); -->
