@@ -7,59 +7,11 @@
     <title>shri-async</title>
 </head>
 <body>
+    Подробности в консоли.
+    <br>
+    Код в index.js
+
     <script src="shri-async-hw.js"></script>
-
-    <script>
-        const { AsyncArray, less, add } = Homework;
-
-        async function map (array, fn, cb) {
-            const resArray = new AsyncArray();
-
-            const lengthAsyncArr = await promisify(array.length)();
-            const getAsyncArr = promisify(array.get);
-            const pushAsyncArr = promisify(resArray.push);
-
-            const lessAsyncOperation = promisify(less);
-            const addAsyncOperation = promisify(add);
-            
-            let index = 0;
-
-            while (await lessAsyncOperation(index, lengthAsyncArr)) {
-                await getAsyncArr(index)
-                    .then((res) => fn(res, index, array))
-                    .then((mapped) => pushAsyncArr(mapped))
-
-                index = await addAsyncOperation(index, 1);
-            }
-                
-            cb(resArray);
-        }
-    
-        function promisify(f) {
-            return function(...args) {
-                return new Promise((resolve) => {
-                    f(...args, resolve);
-                })
-            }
-        }
-
-        function double(el) {
-            return el*el;
-        }
-
-        const array = new AsyncArray([1,2,3]);
-        map(array, double, (array) => array.print());
-
-    </script>
+    <script src="index.js"></script>
 </body>
 </html>
-
-
-
-<!-- for(let i=0; i <= length-1; i++) {
-    arr.push(getPromise(array, fn, i));
-}
-
-Promise.all(arr).then((res) => {
-    resArray.push([...res], () => resArray.print());
-}); -->
