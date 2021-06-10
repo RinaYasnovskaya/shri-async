@@ -10,58 +10,37 @@
     <script src="shri-async-hw.js"></script>
 
     <script>
-        const { AsyncArray } = Homework;
+        const { AsyncArray, less, add } = Homework;
 
-        function map (array, fn, cb) {
+        async function map (array, fn, cb) {
             const resArray = new AsyncArray();
 
-            array.length((length) => {
-                const arr = [];
+            const lengthAsyncArr = await promisify(array.length)();
+            const getAsyncArr = promisify(array.get);
+            const pushAsyncArr = promisify(resArray.push);
 
-                const range = {
-                    last: length,
-                };
+            const lessAsyncOperation = promisify(less);
+            const addAsyncOperation = promisify(add);
+            
+            let index = 0;
 
-                range[Symbol.iterator] = function() {
-                    return {
-                        current: 0,
-                        last: this.last,
+            while (await lessAsyncOperation(index, lengthAsyncArr)) {
+                await getAsyncArr(index)
+                    .then((res) => fn(res, index, array))
+                    .then((mapped) => pushAsyncArr(mapped))
 
-                        next() {
-                            if (this.current < this.last) {
-                                return { done: false, value: this.current++ };
-                            } else {
-                                return { done: true };
-                            }
-                        }
-
-                    }
-
-                };
-
-                for (let item of range) {
-                    arr.push(getPromise(array, fn, item));
-
-                    // resArray.push(getPromise(array, fn, item).then(res => fn(res)), () => {
-                    //     resArray.print();
-                    // });
-                }
-
-                Promise.all(arr).then((res) => {
-                    resArray.push([...res], () => {
-                        cb(resArray);
-                    });
-                }); 
-
+                index = await addAsyncOperation(index, 1);
+            }
                 
-            });
+            cb(resArray);
         }
     
-        function getPromise (array, fn, index) {
-            return new Promise(resolve => {
-                array.get(index, (resultItem) => resolve(resultItem))
-            })
-            .then(resultItem => fn(resultItem));
+        function promisify(f) {
+            return function(...args) {
+                return new Promise((resolve) => {
+                    f(...args, resolve);
+                })
+            }
         }
 
         function double(el) {
