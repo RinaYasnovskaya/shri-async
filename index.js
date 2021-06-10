@@ -48,7 +48,7 @@ function equalOfElementAndOne(element) {
     return element === 1;
 }
 
-async function example(params) {
+async function example() {
     const array = new AsyncArray([1,2,3,4]);
 
     console.log('----Возведение в степень----');
