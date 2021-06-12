@@ -6,7 +6,7 @@
     );
 
     const { fromEvent, from } = rxjs;
-    const { switchMap } = rxjs.operators;
+    const { switchMap, mergeMap, distinctUntilChanged } = rxjs.operators;
 
     const button = document.querySelector('#button');
     const input = document.querySelector('#input');
@@ -27,11 +27,21 @@
 
     const resolveCancelRequest = () => {
         inputObservable$
-            .pipe((switchMap(ev => from(getApiResponse(ev.target.value)))))
-            .subscribe(result => {
-                requestContainer.textContent = result;
-            })
+            .pipe(switchMap(ev => from(getApiResponse(ev.target.value))))
+            .subscribe(result => requestContainer.textContent = result)
     };
 
     resolveCancelRequest();
+
+    // task 3
+    const resolveRaceCondition = () => {
+        inputObservable$
+            .pipe(
+                mergeMap(ev => from(getApiResponse(ev.target.value))),
+                distinctUntilChanged((prev, curr) => prev.length < curr.length),
+            )
+            .subscribe(result => responsiveContainer.textContent += result + ',')
+    };
+
+    resolveRaceCondition();
 })()
