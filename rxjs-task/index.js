@@ -5,7 +5,8 @@
         setTimeout(() => resolve(searchString), getRandomInt(1, 10) * 500)
     );
 
-    const { fromEvent } = rxjs;
+    const { fromEvent, from } = rxjs;
+    const { switchMap } = rxjs.operators;
 
     const button = document.querySelector('#button');
     const input = document.querySelector('#input');
@@ -13,12 +14,24 @@
     const requestContainer = document.querySelector('#cancel-prev-request-container');
 
     // task 1 
-    fromEvent(button, 'click').subscribe(() => {
+    const buttonObservable$ = fromEvent(button, 'click');
+
+    buttonObservable$.subscribe(() => {
         input.value = '';
         responsiveContainer.textContent = '';
         requestContainer.textContent = '';
     });
 
     // task 2
-    
+    const inputObservable$ = fromEvent(input, 'input');
+
+    const resolveCancelRequest = () => {
+        inputObservable$
+            .pipe((switchMap(ev => from(getApiResponse(ev.target.value)))))
+            .subscribe(result => {
+                requestContainer.textContent = result;
+            })
+    };
+
+    resolveCancelRequest();
 })()
